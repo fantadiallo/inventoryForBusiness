@@ -120,7 +120,7 @@ export default function AddPredefinedOrder() {
       ))}
 
       <button className="btn btn-outline-primary w-100 mb-3" onClick={handleAddItem}>
-        ➕ Add Item
+         Add Item
       </button>
 
       <button className="btn btn-success w-100" onClick={handleSubmit}>

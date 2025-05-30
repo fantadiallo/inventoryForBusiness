@@ -41,7 +41,7 @@ export default function Dashboard() {
       if (enteredCode && enteredCode === business.manager_passcode) {
         setCanAccessAdmin(true);
       } else {
-        alert('❌ Wrong code. Admin panel will remain hidden.');
+        alert('❌Wrong code. Admin panel will remain hidden.');
       }
     }
 
