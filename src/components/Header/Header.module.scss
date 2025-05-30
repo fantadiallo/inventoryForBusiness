@@ -1,0 +1,71 @@
+.topBar {
+  height: 60px;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+  padding: 0 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 1001;
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #333;
+  text-decoration: none;
+}
+
+.toggleButton {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -240px;
+  width: 240px;
+  height: 100vh;
+  background: #f8f9fa;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  padding: 2rem 1rem;
+  transition: left 0.3s ease-in-out;
+  z-index: 1000;
+}
+
+.sidebar.open {
+  left: 0;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar li {
+  margin-bottom: 1rem;
+}
+
+.sidebar a,
+.sidebar button {
+  color: #333;
+  font-size: 1rem;
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 999;
+}
