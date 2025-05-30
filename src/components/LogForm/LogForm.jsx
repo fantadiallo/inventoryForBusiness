@@ -1,103 +1,96 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../../supabase/client';
-import styles from './LogForm.module.scss';
 
 export default function LogForm() {
   const [items, setItems] = useState([]);
   const [selectedItemId, setSelectedItemId] = useState('');
-  const [log, setLog] = useState({
-    date: '',
-    start_qty: '',
-    used_qty: '',
-    price: '',
-    note: '',
-  });
-  const [message, setMessage] = useState('');
+  const [startQty, setStartQty] = useState(0);
+  const [usedQty, setUsedQty] = useState(0);
+  const [price, setPrice] = useState('');
+  const [note, setNote] = useState('');
+
+  const date = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
-    async function fetchItems() {
-      const { data } = await supabase.from('inventory_items').select('id, name');
-      setItems(data || []);
+    async function loadItems() {
+      const { data, error } = await supabase.from('inventory_items').select();
+      if (data) setItems(data);
     }
-    fetchItems();
+
+    loadItems();
   }, []);
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    const { error } = await supabase.from('inventory_logs').insert([
-      {
-        item_id: selectedItemId,
-        ...log,
-        start_qty: Number(log.start_qty),
-        used_qty: Number(log.used_qty),
-        price: Number(log.price),
-      },
-    ]);
-    if (error) {
-      setMessage('Error logging inventory: ' + error.message);
-    } else {
-      setMessage('Log saved ✅');
-      setLog({ date: '', start_qty: '', used_qty: '', price: '', note: '' });
-      setSelectedItemId('');
+  useEffect(() => {
+    async function fetchPreviousLog() {
+      if (!selectedItemId) return;
+
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yDate = yesterday.toISOString().split('T')[0];
+
+      const { data } = await supabase
+        .from('inventory_logs')
+        .select('start_qty, used_qty')
+        .eq('item_id', selectedItemId)
+        .eq('date', yDate)
+        .maybeSingle();
+
+      if (data) {
+        const previousEnd = data.start_qty - data.used_qty;
+        setStartQty(previousEnd);
+      } else {
+        setStartQty(0);
+      }
     }
-  }
+
+    fetchPreviousLog();
+  }, [selectedItemId]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const { error } = await supabase.from('inventory_logs').insert({
+      item_id: selectedItemId,
+      date,
+      start_qty: startQty,
+      used_qty: usedQty,
+      price,
+      note,
+    });
+
+    if (error) {
+      alert('Error saving log');
+      console.error(error);
+    } else {
+      alert('Log saved!');
+      setUsedQty(0);
+      setPrice('');
+      setNote('');
+    }
+  };
 
   return (
-    <div className={styles.formWrap}>
-      <h2>Add Daily Inventory Log</h2>
-      <form onSubmit={handleSubmit}>
-        <select
-          className="form-select mb-2"
-          value={selectedItemId}
-          onChange={e => setSelectedItemId(e.target.value)}
-          required
-        >
-          <option value="">Select Item</option>
-          {items.map(i => (
-            <option key={i.id} value={i.id}>{i.name}</option>
-          ))}
-        </select>
+    <form onSubmit={handleSubmit}>
+      <label>Item</label>
+      <select onChange={(e) => setSelectedItemId(e.target.value)} required>
+        <option value="">Select item</option>
+        {items.map((item) => (
+          <option key={item.id} value={item.id}>{item.name}</option>
+        ))}
+      </select>
 
-        <input
-          type="date"
-          className="form-control mb-2"
-          value={log.date}
-          onChange={e => setLog({ ...log, date: e.target.value })}
-          required
-        />
-        <input
-          type="number"
-          className="form-control mb-2"
-          placeholder="Start Quantity"
-          value={log.start_qty}
-          onChange={e => setLog({ ...log, start_qty: e.target.value })}
-          required
-        />
-        <input
-          type="number"
-          className="form-control mb-2"
-          placeholder="Used Quantity"
-          value={log.used_qty}
-          onChange={e => setLog({ ...log, used_qty: e.target.value })}
-          required
-        />
-        <input
-          type="number"
-          className="form-control mb-2"
-          placeholder="Price per Unit"
-          value={log.price}
-          onChange={e => setLog({ ...log, price: e.target.value })}
-          required
-        />
-        <textarea
-          className="form-control mb-3"
-          placeholder="Notes (optional)"
-          value={log.note}
-          onChange={e => setLog({ ...log, note: e.target.value })}
-        />
-        <button className="btn btn-primary w-100">Save Log</button>
-        {message && <p className="mt-2 text-info">{message}</p>}
-      </form>
-    </div>
+      <label>Start Qty (auto-filled)</label>
+      <input value={startQty} readOnly />
+
+      <label>Used Qty</label>
+      <input type="number" value={usedQty} onChange={(e) => setUsedQty(Number(e.target.value))} required />
+
+      <label>Price (optional)</label>
+      <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} />
+
+      <label>Note</label>
+      <textarea value={note} onChange={(e) => setNote(e.target.value)} />
+
+      <button type="submit">Submit</button>
+    </form>
   );
 }
