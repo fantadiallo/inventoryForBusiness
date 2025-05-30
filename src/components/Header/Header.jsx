@@ -19,7 +19,7 @@ export default function Header() {
           <button className={styles.toggleButton} onClick={() => setOpen(!open)}>
             ☰
           </button>
-          <Link to="/" className={styles.logo}>Inventory</Link>
+          <Link to="/" className={styles.logo}>InventoryGMB</Link>
         </div>
       </header>
 
