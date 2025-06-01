@@ -1,6 +1,6 @@
 .historyWrap {
-  padding: 2rem;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.04);
+  /* If you want the table to scroll inside a fixed-height div: */
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-bottom: 1rem;
 }
