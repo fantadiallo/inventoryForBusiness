@@ -1,21 +1,23 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../../supabase/client';
 import { Navigate } from 'react-router-dom';
+import { supabase } from '../../supabase/client';
 
 export default function ProtectedRoute({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function checkSession() {
-      const { data } = await supabase.auth.getSession();
-      setUser(data?.session?.user || null);
+    const { data: listener } = supabase.auth.onAuthStateChange((_, s) => {
+      setUser(s?.user || null);
       setLoading(false);
-    }
-    checkSession();
+    });
+    supabase.auth.getSession().then(({ data }) => {
+      setUser(data.session?.user || null);
+      setLoading(false);
+    });
+    return () => listener.subscription.unsubscribe();
   }, []);
 
-  if (loading) return <p>Loading...</p>;
-
+  if (loading) return <div className="d-flex justify-content-center p-5">Loading…</div>;
   return user ? children : <Navigate to="/" />;
 }
