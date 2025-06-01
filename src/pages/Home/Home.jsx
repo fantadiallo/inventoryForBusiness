@@ -1,4 +1,7 @@
-import AuthPanel from "../../components/Auth/AuthPanel";
+// src/pages/Home/Home.jsx
+
+import React from 'react';
+import AuthPanel from '../../components/Auth/AuthPanel';
 
 export default function Home() {
   return (
@@ -7,3 +10,4 @@ export default function Home() {
     </div>
   );
 }
+
