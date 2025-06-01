@@ -1,25 +1,33 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home/Home';
-import Dashboard from './pages/Dashboard/Dashboard';
-import Logs from './pages/Logs/Logs';
-import AddLog from './pages/AddLog/AddLog';
-import Layout from './components/Layout/Layout';
-import ProtectedRoute from './components/Auth/ProtectedRoute';
-import AddItemForm from './components/AddItemForm/AddItemForm';
-import InventoryTable from './components/Inventory/InventoryTable';
-import Orders from './components/Orders/Orders';
-import DailyReports from './components/Reports/DailyReports';
-import ShoppingList from './components/Shopping/ShoppingList';
-import ReviewLogs from './components/ReviewLogs/ReviewLogs';
-import AddPredefinedOrder from './components/Orders/AddPredefinedOrder'; // ✅ newly added
+import Layout            from './components/Layout/Layout';
+import ProtectedRoute    from './components/Auth/ProtectedRoute';
+import Home              from './pages/Home/Home';
+import Dashboard         from './pages/Dashboard/Dashboard';
+import AddLogPage        from './pages/AddLog/AddLog';
+import LogsPage          from './pages/Logs/LogsPage';
+import InventoryPage     from './pages/Inventory/InventoryPage';
+import ReviewLogsPage    from './pages/ReviewLogs/ReviewLogsPage';
+import OrdersPage        from './pages/Orders/OrdersPage';
+import OrderApprovalPage from './pages/Orders/OrderApprovalPage';
+import ReportsPage       from './pages/Reports/ReportsPage';
+import ReportReviewPage  from './pages/Reports/ReportReviewPage';
+import ShoppingPage      from './pages/Shopping/ShoppingPage';
+import AddProductPage    from './pages/Orders/AddProductPage';
 
 export default function App() {
   return (
     <Router>
       <Routes>
+        {/* 
+          Use <Layout /> (which renders <Header />, <Outlet />, <Footer />) 
+          as the wrapper for all child routes.
+        */}
         <Route element={<Layout />}>
+          {/* Public route: Home (login/register) */}
           <Route path="/" element={<Home />} />
 
+          {/* All protected routes below */}
           <Route
             path="/dashboard"
             element={
@@ -28,75 +36,83 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/add-log"
             element={
               <ProtectedRoute>
-                <AddLog />
+                <AddLogPage />
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/logs"
             element={
               <ProtectedRoute>
-                <Logs />
+                <LogsPage />
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/inventory"
             element={
               <ProtectedRoute>
-                <InventoryTable />
+                <InventoryPage />
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/approve-logs"
             element={
               <ProtectedRoute>
-                <ReviewLogs />
+                <ReviewLogsPage />
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/orders"
             element={
               <ProtectedRoute>
-                <Orders />
+                <OrdersPage />
               </ProtectedRoute>
             }
           />
-
+          <Route
+            path="/approve-orders"
+            element={
+              <ProtectedRoute>
+                <OrderApprovalPage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/daily-report"
             element={
               <ProtectedRoute>
-                <DailyReports />
+                <ReportsPage />
               </ProtectedRoute>
             }
           />
-
+          <Route
+            path="/review-reports"
+            element={
+              <ProtectedRoute>
+                <ReportReviewPage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/shopping-list"
             element={
               <ProtectedRoute>
-                <ShoppingList />
+                <ShoppingPage />
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/add-product"
             element={
               <ProtectedRoute>
-                <AddPredefinedOrder />
+                <AddProductPage />
               </ProtectedRoute>
             }
           />
