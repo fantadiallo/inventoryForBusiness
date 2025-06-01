@@ -1,70 +1,116 @@
+// src/components/Orders/OrderTemplates.jsx
+
 import { useEffect, useState } from 'react';
-import { supabase } from '../../supabase/client';
+import { supabase }            from '../../supabase/client';
 
 export default function OrderTemplates() {
-  const [items, setItems] = useState([]);
-  const [name, setName] = useState('');
-  const [type, setType] = useState('dish');
-  const [selected, setSelected] = useState([]);
-  const [message, setMessage] = useState('');
-  const businessId = localStorage.getItem('business_id');
+  // ─────────── STATE ───────────
+  const [items, setItems]       = useState([]);
+  const [name, setName]         = useState('');
+  const [type, setType]         = useState('dish');
+  const [selected, setSelected] = useState([]);   // array of item_ids
+  const [message, setMessage]   = useState('');
 
+  const businessId = localStorage.getItem('business_id');
+  const userObj    = JSON.parse(localStorage.getItem('user'));
+  const user_id    = userObj?.id;
+
+  // ─────────── LOAD INVENTORY ITEMS ───────────
   useEffect(() => {
     async function loadItems() {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('inventory_items')
-        .select('*')
+        .select('id, name')
         .eq('business_id', businessId);
-      setItems(data || []);
-    }
 
+      if (error) {
+        console.error('Error loading items:', error.message);
+        setItems([]);
+      } else {
+        setItems(data || []);
+      }
+    }
     loadItems();
   }, [businessId]);
 
+  // ─────────── TOGGLE ITEM IN TEMPLATE ───────────
   const toggleItem = (itemId) => {
     setSelected((prev) =>
       prev.includes(itemId) ? prev.filter((id) => id !== itemId) : [...prev, itemId]
     );
   };
 
+  // ─────────── CREATE TEMPLATE ───────────
   const handleCreate = async () => {
-    if (!name || selected.length === 0) return;
+    if (!name.trim() || selected.length === 0) {
+      setMessage('❌ Please enter a name and select at least one item.');
+      return;
+    }
 
-    const { data: order, error } = await supabase
+    // 1) Insert into predefined_orders
+    const { data: order, error: orderErr } = await supabase
       .from('predefined_orders')
-      .insert({ name, type, business_id: businessId })
+      .insert({
+        business_id: businessId,
+        name:        name.trim(),
+        type
+      })
       .select()
       .single();
 
-    if (!error && order) {
-      const rows = selected.map((itemId) => ({
-        order_id: order.id,
-        item_id: itemId,
-        quantity_per_order: 1,
-      }));
-      await supabase.from('order_templates').insert(rows);
-      setMessage(`✅ Created template "${name}"`);
-      setName('');
-      setSelected([]);
+    if (orderErr) {
+      console.error('Error creating template:', orderErr.message);
+      setMessage(`❌ ${orderErr.message}`);
+      return;
     }
+
+    // 2) Insert into order_templates (one row per selected item)
+    const rows = selected.map((itemId) => ({
+      order_id:            order.id,
+      item_id:             itemId,
+      quantity_per_order:  1  // you could, in future, let user specify
+    }));
+
+    const { error: tplErr } = await supabase
+      .from('order_templates')
+      .insert(rows);
+
+    if (tplErr) {
+      console.error('Error saving order_templates:', tplErr.message);
+      setMessage(`❌ ${tplErr.message}`);
+      return;
+    }
+
+    setMessage(`✅ Created template "${name.trim()}"`);
+    setName('');
+    setSelected([]);
   };
 
   return (
     <div className="container py-4">
       <h2>Create Order Template</h2>
 
-      {message && <div className="alert alert-success">{message}</div>}
+      {message && <div className="alert alert-info">{message}</div>}
 
-      <input
-        className="form-control mb-2"
-        placeholder="Template name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      <select className="form-select mb-3" value={type} onChange={(e) => setType(e.target.value)}>
-        <option value="dish">Dish</option>
-        <option value="hairstyle">Hairstyle</option>
-      </select>
+      <div className="mb-3">
+        <input
+          className="form-control"
+          placeholder="Template name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+      </div>
+
+      <div className="mb-3">
+        <select
+          className="form-select"
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+        >
+          <option value="dish">Dish</option>
+          <option value="hairstyle">Hairstyle</option>
+        </select>
+      </div>
 
       <div className="mb-3">
         <p>Select required items:</p>
