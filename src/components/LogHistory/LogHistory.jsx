@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../../supabase/client';
-import styles from './LogHistory.module.scss';
+import { supabase }            from '../../supabase/client';
+import styles                  from './LogHistory.module.scss';
 
 export default function LogHistory() {
   const [logs, setLogs] = useState([]);
@@ -30,7 +30,7 @@ export default function LogHistory() {
           </tr>
         </thead>
         <tbody>
-          {logs.map(log => (
+          {logs.map((log) => (
             <tr key={log.id}>
               <td>{log.date}</td>
               <td>{log.inventory_items?.name}</td>
